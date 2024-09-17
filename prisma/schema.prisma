@@ -6,6 +6,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["relationJoins"]
 }
 
 datasource db {
@@ -14,10 +15,19 @@ datasource db {
 }
 
 model Inventory {
-  entry_id      Int      @id @default(autoincrement())
-  title   String
+  entryId        Int      @id @default(autoincrement())
+  publication_date DateTime
+  title     String   @db.VarChar(255)
+  genre     String
+  isbn      String
   author    String
-  genre String
-  publication_date   DateTime
-  isbn String
+  user  User     @relation(fields: [userId], references: [id])
+  userId  Int
+}
+
+model User {
+  id      Int      @id @default(autoincrement())
+  email   String   @unique
+  name String
+  books   Inventory[]
 }

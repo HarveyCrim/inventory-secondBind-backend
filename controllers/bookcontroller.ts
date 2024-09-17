@@ -36,7 +36,7 @@ export const filterBooks = async (req: Request, res: Response) => {
         if(req.body.author){
             queryParams.push({
                 author: {
-                    contains: req.body.author
+                    contains : req.body.author
                 }
             })
         }
