@@ -12,7 +12,8 @@ export const insertBook = async (req: Request, res: Response) => {
         await prisma.inventory.create({
             data : {
                 ...req.body,
-                publication_date: new Date(date)
+                publication_date: new Date(date),
+                userId : res.locals.verified.id
             }
         })
         await prisma.$disconnect()
@@ -23,55 +24,75 @@ export const insertBook = async (req: Request, res: Response) => {
     }
 }
 
+export const getMyBooks = async (req: Request, res: Response) => {
+    try{
+        const {offset} = req.query
+        const books = await prisma.inventory.findMany({
+            skip: Number(offset) * 12,
+            take: 12,
+            where : {
+                userId : res.locals.verified.id
+            }
+        })
+        res.json(books)
+    }
+    catch(err){
+        res.status(500).json(err)
+    }
+}
+
+export const getMyBooksCount = async(req: Request, res: Response) => {
+    try{
+        const books = await prisma.inventory.count({
+            where: {
+                userId: res.locals.verified.id
+            }
+        })
+        res.json(books)
+    }
+    catch(err){
+        res.status(500).json(err)
+    }
+}
+
 export const filterBooks = async (req: Request, res: Response) => {
     try{
-        let queryParams = []
-        if(req.body.title){
-            queryParams.push({
-                title : {
-                    contains: req.body.title
-                }
-            })
+        const genreFilter = req.body.genres ?
+        {
+            genre : {
+                in : req.body.genres
+            }
         }
-        if(req.body.author){
-            queryParams.push({
-                author: {
-                    contains : req.body.author
-                }
-            })
-        }
-        if(req.body.genres){
-            queryParams.push({
-                genre : {
-                    in : req.body.genres
-                }
-            })
-        }
-        if(req.body.beforeDate && req.body.afterDate){
-            queryParams.push({
-                publication_date : {
-                    gte : new Date(req.body.afterDate),
-                    lte : new Date(req.body.beforeDate)
-                }
-            })
-        }
-        else if(req.body.beforeDate){
-            queryParams.push({
-                publication_date : {
-                    lte : new Date(req.body.beforeDate)
-                }
-            })
-        }
-        else if(req.body.afterDate){
-            queryParams.push({
-                publication_date : {
-                    gte : new Date(req.body.afterDate)
-                }
-            })
+        :
+        {
+            genre : {
+                notIn : []
+            }
         }
         const data = await prisma.inventory.findMany({
             where: {
-                AND: queryParams
+                AND: [
+                    {
+                        author: {
+                            contains : req.body.author ? req.body.author : "",
+                            mode: 'insensitive',
+                        }
+                    },
+                    {
+                        title : {
+                            contains: req.body.title ? req.body.title : "",
+                            mode: 'insensitive',
+                        }
+                    },
+                    genreFilter,
+                    {
+                        publication_date : {
+                            gte : req.body.afterDate ? new Date(req.body.afterDate) : new Date("1200-01-01"),
+                            lte : req.body.beforeDate ? new Date(req.body.beforeDate) : new Date()
+                        }
+                    }
+
+                ]
             }
         })
         await prisma.$disconnect()
@@ -79,6 +100,7 @@ export const filterBooks = async (req: Request, res: Response) => {
         
     }
     catch(err){
+        
         res.json(err)
     }
 }

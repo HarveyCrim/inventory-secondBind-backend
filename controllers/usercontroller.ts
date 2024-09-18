@@ -1,5 +1,7 @@
 import {Request, Response} from "express"
 import { PrismaClient } from '@prisma/client'
+import jwt from "jsonwebtoken"
+import { Secret } from "jsonwebtoken"
 const prisma = new PrismaClient()
 export const createOrGetUser = async (req: Request, res: Response) => {
     try{
@@ -10,7 +12,8 @@ export const createOrGetUser = async (req: Request, res: Response) => {
             
         })
         if(user){
-           res.json(user)
+           const token = jwt.sign({id : user.id}, process.env.JWT_SECRET as Secret)
+           return res.json({token : "Bearer "+token})
         }
         else{
             const newUser = await prisma.user.create({
@@ -19,7 +22,9 @@ export const createOrGetUser = async (req: Request, res: Response) => {
                     name : req.body.name
                 }
             })
-            return res.json(newUser)
+            
+            const token = jwt.sign({id : newUser.id}, process.env.JWT_SECRET as Secret)
+            return res.json({token : "Bearer "+token})
         }
     }
     catch(err){
