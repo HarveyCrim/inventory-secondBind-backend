@@ -4,6 +4,8 @@ import bookRouter from "./routers/bookrouter"
 import userRouter from "./routers/userrouter"
 import "dotenv/config"
 const app = express()
+
+//cors policy override
 const corsConfig = {
     credentials:true,       
    

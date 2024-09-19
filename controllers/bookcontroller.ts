@@ -4,6 +4,9 @@ const prisma = new PrismaClient()
 type genre = {
     genre: String
 }
+
+// contains all the api endpoints for functionality of the inventory
+
 export const insertBook = async (req: Request, res: Response) => {
     const date = req.body.date
     delete req.body["date"]

@@ -3,6 +3,9 @@ import { PrismaClient } from '@prisma/client'
 import jwt from "jsonwebtoken"
 import { Secret } from "jsonwebtoken"
 const prisma = new PrismaClient()
+
+//contains all the api endpoints for user
+
 export const createOrGetUser = async (req: Request, res: Response) => {
     try{
         let user = await prisma.user.findUnique({
