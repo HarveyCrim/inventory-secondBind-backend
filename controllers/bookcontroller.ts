@@ -111,6 +111,8 @@ export const getFilterBooksCount = async(req: Request, res: Response) => {
 
 export const filterBooks = async (req: Request, res: Response) => {
     const page = Number(req.query.page)
+    console.log(page)
+    console.log(req.body)
     try{
         const genreFilter = req.body.genres.length > 0 ?
         {
@@ -125,8 +127,8 @@ export const filterBooks = async (req: Request, res: Response) => {
             }
         }
         const data = await prisma.inventory.findMany({
-            skip: page ? page * 13 : 0,
-            take: page ? 13 : 2147483647,
+            skip: page != -1 ? page * 13 : 0,
+            take: page != -1 ? 13 : 2147483647,
             where: {
                 AND: [
                     {
