@@ -110,9 +110,8 @@ export const getFilterBooksCount = async(req: Request, res: Response) => {
 }
 
 export const filterBooks = async (req: Request, res: Response) => {
+
     const page = Number(req.query.page)
-    console.log(page)
-    console.log(req.body)
     try{
         const genreFilter = req.body.genres.length > 0 ?
         {
@@ -174,9 +173,9 @@ export const filterBooks = async (req: Request, res: Response) => {
 export const getGenres = async(req: Request, res: Response) => {
     try{
         const resp:genre[]  = await prisma.$queryRaw `SELECT DISTINCT genre FROM "public"."Inventory"`
-        let genres: String[] = []
+        let genres: {label: String, value:String}[] = []
         resp.forEach(element => {
-            genres.push(element.genre)
+            genres.push({label: String(element.genre), value: element.genre})
         });
         await prisma.$disconnect()
         res.json(genres)
