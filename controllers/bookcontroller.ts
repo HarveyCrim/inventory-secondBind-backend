@@ -55,9 +55,66 @@ export const getMyBooksCount = async(req: Request, res: Response) => {
     }
 }
 
-export const filterBooks = async (req: Request, res: Response) => {
+export const getFilterBooksCount = async(req: Request, res: Response) => {
     try{
-        const genreFilter = req.body.genres ?
+        const genreFilter = req.body.genres.length > 0 ?
+        {
+            genre : {
+                in : req.body.genres
+            }
+        }
+        :
+        {
+            genre : {
+                notIn : []
+            }
+        }
+        const data = await prisma.inventory.count({
+            where: {
+                AND: [
+                    {
+                        author: {
+                            contains : req.body.author,
+                            mode: 'insensitive',
+                        }
+                    },
+                    {
+                        title : {
+                            contains: req.body.title,
+                            mode: 'insensitive',
+                        }
+                    },
+                    {
+                        isbn : {
+                            contains: req.body.isbn,
+                            mode: 'insensitive',
+                        }
+                    },
+                    genreFilter,
+                    {
+                        publication_date : {
+                            gte : new Date(req.body.afterDate),
+                            lte : new Date(req.body.beforeDate)
+                        }
+                    }
+
+                ]
+            }
+        })
+        await prisma.$disconnect()
+        res.json(data)
+        
+    }
+    catch(err){
+        res.json(err)
+    }
+}
+
+export const filterBooks = async (req: Request, res: Response) => {
+    console.log(req.body)
+    const page = Number(req.query.page)
+    try{
+        const genreFilter = req.body.genres.length > 0 ?
         {
             genre : {
                 in : req.body.genres
@@ -70,25 +127,33 @@ export const filterBooks = async (req: Request, res: Response) => {
             }
         }
         const data = await prisma.inventory.findMany({
+            skip: page * 13,
+            take: 13,
             where: {
                 AND: [
                     {
                         author: {
-                            contains : req.body.author ? req.body.author : "",
+                            contains : req.body.author,
                             mode: 'insensitive',
                         }
                     },
                     {
                         title : {
-                            contains: req.body.title ? req.body.title : "",
+                            contains: req.body.title,
+                            mode: 'insensitive',
+                        }
+                    },
+                    {
+                        isbn : {
+                            contains: req.body.isbn,
                             mode: 'insensitive',
                         }
                     },
                     genreFilter,
                     {
                         publication_date : {
-                            gte : req.body.afterDate ? new Date(req.body.afterDate) : new Date("1200-01-01"),
-                            lte : req.body.beforeDate ? new Date(req.body.beforeDate) : new Date()
+                            gte : new Date(req.body.afterDate),
+                            lte : new Date(req.body.beforeDate)
                         }
                     }
 
@@ -100,7 +165,7 @@ export const filterBooks = async (req: Request, res: Response) => {
         
     }
     catch(err){
-        
+
         res.json(err)
     }
 }
