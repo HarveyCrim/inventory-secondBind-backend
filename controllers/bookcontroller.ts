@@ -1,6 +1,5 @@
 import { PrismaClient } from '@prisma/client'
 import { Request, Response } from 'express'
-import { queryObjects } from 'v8'
 const prisma = new PrismaClient()
 type genre = {
     genre: String
@@ -111,7 +110,6 @@ export const getFilterBooksCount = async(req: Request, res: Response) => {
 }
 
 export const filterBooks = async (req: Request, res: Response) => {
-    console.log(req.body)
     const page = Number(req.query.page)
     try{
         const genreFilter = req.body.genres.length > 0 ?
@@ -127,8 +125,8 @@ export const filterBooks = async (req: Request, res: Response) => {
             }
         }
         const data = await prisma.inventory.findMany({
-            skip: page * 13,
-            take: 13,
+            skip: page ? page * 13 : 0,
+            take: page ? 13 : 2147483647,
             where: {
                 AND: [
                     {

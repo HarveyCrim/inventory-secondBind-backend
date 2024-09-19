@@ -28,7 +28,6 @@ export const createOrGetUser = async (req: Request, res: Response) => {
         }
     }
     catch(err){
-        console.log(err)
         res.json(err)
     }
 }
