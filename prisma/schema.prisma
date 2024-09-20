@@ -19,7 +19,7 @@ model Inventory {
   publication_date DateTime
   title     String   @db.VarChar(255)
   genre     String
-  isbn      String
+  isbn      String @unique
   author    String
   user  User     @relation(fields: [userId], references: [id])
   userId  Int
