@@ -11,6 +11,19 @@ export const insertBook = async (req: Request, res: Response) => {
     const date = req.body.date
     delete req.body["date"]
     try{
+        const books = await prisma.inventory.findMany({
+            where: {
+                isbn:req.body.isbn
+            }
+        })
+        await prisma.$disconnect()
+        if(books.length > 0)
+            return res.json({"message" : "already"})
+    }
+    catch(err){
+        return res.json(err)
+    }
+    try{
         await prisma.inventory.create({
             data : {
                 ...req.body,
@@ -19,13 +32,26 @@ export const insertBook = async (req: Request, res: Response) => {
             }
         })
         await prisma.$disconnect()
-        res.json({"message" : "added"})
+        return res.json({"message" : "added"})
     }
     catch(err){
-        res.json(err)
+        return res.json(err)
     }
 }
 
+export const uniqueISBN = async (req: Request, res: Response) => {
+    try{
+        const book = await prisma.inventory.findMany({
+            where: {
+                isbn: req.query.isbn as string
+            }
+        })
+        return res.json(book)
+    }
+    catch(err){
+        return res.json(err)
+    }
+}
 export const getMyBooks = async (req: Request, res: Response) => {
     try{
         const {offset} = req.query
